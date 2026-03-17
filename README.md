@@ -35,7 +35,6 @@ EXAONE은 Global Frontier 급의 Large-scale 모델과 함께, 노트북·모바
 
 <img width="802" height="465" alt="image" src="https://github.com/user-attachments/assets/026f3d61-06dd-45c3-8618-d67e91fd7fcd" />
 
-# LG Aimers 8 EXAONE 4.0 Quantization and Lightweighting Competition
 
 ---
 
