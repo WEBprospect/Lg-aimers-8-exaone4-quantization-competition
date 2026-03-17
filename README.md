@@ -89,8 +89,9 @@ from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from llmcompressor import oneshot
-from llmcompressor.modifiers.quantization import QuantizationModifier` ``` `
+from llmcompressor.modifiers.quantization import QuantizationModifier
 
+####설명
 AutoModelForCausalLM causal language modeling용 모델을 자동으로 불러옵니다. EXAONE 4.0 기반 원본 모델을 로드하는 데 사용했습니다.
 
 oneshot llmcompressor에서 제공하는 함수로, calibration dataset을 기반으로 모델 양자화를 한 번에 수행하는 역할을 했습니다.
