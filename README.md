@@ -1,99 +1,36 @@
-# LG Aimers 8기 EXAONE 4 양자화 대회
+# LG Aimers 8 EXAONE 4.0 Quantization and Lightweighting Competition
 
 ## 프로젝트 개요
-이 프로젝트는 LG Aimers 8기 EXAONE 4 양자화 대회에 참가하기 위해 수행된 양자화 실험 및 최종 코드 정리입니다. EXAONE 4.0 모델을 대상으로 양자화 기법을 적용하여 성능과 속도의 균형을 맞추는 것을 목표로 하였습니다.
+
+이 저장소는 **LG Aimers 8 EXAONE 4.0 관련 대회**에서 진행한 양자화 및 경량화 실험을 정리한 기록입니다.  
+최종적으로 사용한 제출 코드와, 해당 코드에 도달하기 전까지 수행했던 시행착오 및 실패 원인을 함께 정리했습니다.
+
+이 프로젝트의 목적은 단순히 양자화 코드를 보관하는 데 있지 않았습니다.  
+대회 환경에서 실제로 어떤 시도가 유효했고, 어떤 시도가 성능 저하로 이어졌는지를 실험 중심으로 기록하는 데 의미를 두었습니다.
+
+**최종 순위는 28/612Team**
+
+---
 
 ## 대회/배경
-LG Aimers 8기 대회에서 EXAONE 4.0 모델의 양자화를 통해 모델 크기를 줄이고 추론 속도를 향상시키는 과제를 수행하였습니다. 평가 지표는 성능 정규화 점수(PerfNorm)와 속도 정규화 점수(SpeedNorm)의 가중 평균으로 구성됩니다.
 
-## 최종 접근 방식 요약
-최종적으로 GPTQ 기반 양자화를 적용하였으며, W4A16 양자화 방식을 채택하여 outlier가 많이 발생하는 특정 레이어(28번째 레이어의 up_proj)를 보호하는 전략을 사용하였습니다. Calibration 데이터는 기본 설정을 유지하고, 샘플 수는 256개로 하였습니다.
+최근 AI 서비스는 클라우드 기반의 대규모 모델을 넘어, On-Device 환경에서도 빠르고 안정적으로 동작하는 경량 모델에 대한 요구가 급격히 증가하고 있습니다.  
+특히 응답 지연(latency), 메모리 사용량, 운영 비용 등의 제약으로 인해 모델 크기를 줄이면서도 성능을 유지하는 기술이 중요한 과제로 부상하고 있습니다.
 
-## 폴더 구조
-- `README.md`: 프로젝트 설명
-- `experiment_log.md`: 실험 시행착오 기록
-- `paper_review.md`: 참고 논문 리뷰
-- `outputs/`: 양자화 결과 출력 폴더 (빈 폴더, 실제 출력 파일은 제외)
-- `submit/`: 제출용 모델 폴더 (빈 폴더, 실제 모델 파일은 제외)
+EXAONE은 Global Frontier 급의 Large-scale 모델과 함께, 노트북·모바일 등 제한된 환경에서도 활용 가능한 Small-scale 모델 라인업을 보유하고 있습니다.  
+그러나 단순히 파라미터 수를 줄이는 방식은 메모리와 속도 측면에서는 유리할 수 있으나, 정확도 저하라는 명확한 한계를 동반합니다.
 
-## 실험 기록 문서 링크 안내
-자세한 실험 시행착오 및 실패 원인은 `experiment_log.md`를 참고하세요.
+이에 따라, 모델 크기를 효과적으로 축소하면서도 성능 저하를 최소화하고, 실제 추론 환경에서의 효율을 극대화할 수 있는 경량화 기법을 탐구하는 것이 중요했습니다.
 
-## 참고한 논문 목록
-- GPTQ
-- SmoothQuant
-- llm.int8()
-- Distillation + Quantization 관련 논문
-- EXAONE 4.0 논문
-- EXAONE 4.0 멀티 어텐션 + 멀티 마스크 디코더 논문
-- AWQ
-
-자세한 논문 리뷰는 `paper_review.md`를 참고하세요.
-- `experiment_log.md`: 실험 시행착오 기록
-- `paper_review.md`: 참고 논문 리뷰
-- `outputs/`: 양자화 결과 출력 폴더 (빈 폴더, 실제 출력 파일은 제외)
-- `submit/`: 제출용 모델 폴더 (빈 폴더, 실제 모델 파일은 제외)
-
-## 실험 기록 문서 링크 안내
-자세한 실험 시행착오 및 실패 원인은 `experiment_log.md`를 참고하세요.
-
-## 참고한 논문 목록
-- GPTQ
-- SmoothQuant
-- llm.int8()
-- Distillation + Quantization 관련 논문
-- EXAONE 4.0 논문
-- EXAONE 4.0 멀티 어텐션 + 멀티 마스크 디코더 논문
-- AWQ
-
-자세한 논문 리뷰는 `paper_review.md`를 참고하세요.
-=======
-## 최종 코드 설명
-
-최종 제출 코드는 `final_quantize.py`에 정리되어 있다.
-
-주요 흐름은 다음과 같다.
-
-1. `base_model` 경로에서 원본 모델 로드
-2. calibration용 JSONL 데이터 생성
-3. tokenizer의 chat template 적용
-4. `QuantizationModifier`로 `W8A8` 양자화 수행
-5. 결과 모델과 tokenizer 저장
-6. `generation_config.json` 수정
+이번 해커톤은 이러한 문제의식을 바탕으로, **EXAONE 4.0 모델을 대상으로 한 실전 중심의 LLM 경량화**를 수행하는 대회였습니다.
 
 ---
 
-## 실행 흐름
+## 평가 리더보드
 
-### 1. 기본 폴더 준비
+리더보드 점수는 **성능(Performance)** 과 **속도(Speed)** 를 함께 반영하는 방식으로 계산되었습니다.
 
-- `base_model/` : 원본 모델 디렉토리
-- `submit/model/` : 양자화 결과 저장 경로
-
-### 2. 스크립트 실행
-
-`final_quantize.py`를 실행하면 다음이 순서대로 수행된다.
-
-- calibration 데이터 생성
-- 원본 모델 로드
-- dataset 변환
-- W8A8 양자화
-- 결과 저장
-- generation_config 수정
-
----
-
-## 폴더 구조
+### 평가 산식
 
 ```text
-Lg-aimers-8-exaone4-quantization-competition/
-├─ README.md
-├─ final_quantize.py
-├─ docs/
-│  ├─ experiment_log.md
-│  └─ paper_review.md
-├─ outputs/
-│  └─ .gitkeep
-└─ submit/
-   └─ .gitkeep
->>>>>>> 91e12826bff81b12a443260d477ef46e3583fb17
+Score = max(0.5 × PerfNorm_model + 0.5 × SpeedNorm_model, 0)
