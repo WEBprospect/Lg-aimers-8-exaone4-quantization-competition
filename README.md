@@ -63,12 +63,12 @@ llmcompressor에서 제공하는 함수로, calibration dataset을 기반으로 
 
 QuantizationModifier
 양자화 설정을 정의하는 객체입니다.
-어떤 계층을 양자화할지, 어떤 계층은 제외할지, 어떤 quantization scheme을 적용할지를 여기서 지정했습니다.
+어떤 계층을 양자화할지, 어떤 계층은 제외할지, 어떤 quantization scheme을 적용할지를 여기서 지정했습니다.```
 
----
+
 ##2. Calibration 샘플 정의
 
-'''base_calib_samples = [
+```base_calib_samples = [
     {"messages": [{"role": "user", "content": "단계별로 풀고 마지막 줄에 답만 써줘: 어떤 수의 30%는 45이다. 그 수는?"}]},
     {"messages": [{"role": "user", "content": "다음 두 식을 연립하여 x, y를 구하시오. x + y = 10, x - y = 2"}]},
     {"messages": [{"role": "user", "content": "이순신 장군이 거북선을 만든 이유를 논리적으로 설명해줘."}]},
@@ -81,11 +81,11 @@ GPTQ 계열 또는 W8A8 계열 양자화에서는 단순히 모델 weight만 바
 
 이렇게 구성한 이유는 calibration 입력이 한 가지 유형에만 치우치지 않도록 하기 위함이었습니다.
 즉, 짧은 계산 문제, 논리적 설명, 코드 생성 등 서로 다른 특성을 가진 입력을 섞어서
-모델이 여러 스타일의 입력 분포를 최소한이라도 보게 만들고자 했습니다.
+모델이 여러 스타일의 입력 분포를 최소한이라도 보게 만들고자 했습니다.```
 ---
 ##3. Calibration 데이터 확장 및 JSONL 저장
 
-'''calib_data = base_calib_samples * 64 
+```calib_data = base_calib_samples * 64 
 
 calib_path = ROOT / "calib_optimized.jsonl"
 with open(calib_path, "w", encoding="utf-8") as f:
@@ -94,10 +94,10 @@ with open(calib_path, "w", encoding="utf-8") as f:
 print(f"[2] 캘리브레이션 데이터(다양성 확보) 생성 완료: {calib_path}")
 
 이 부분은 앞에서 만든 4개의 기본 calibration 샘플을 실제 양자화에 사용할 수 있도록 확장하고,
-이를 .jsonl 파일로 저장하는 단계였습니다.
+이를 .jsonl 파일로 저장하는 단계였습니다.```
 ---
 ##4. Tokenizer와 원본 모델 로드
-'''tokenizer = AutoTokenizer.from_pretrained(str(BASE), trust_remote_code=True, local_files_only=True)
+```tokenizer = AutoTokenizer.from_pretrained(str(BASE), trust_remote_code=True, local_files_only=True)
 model = AutoModelForCausalLM.from_pretrained(
     str(BASE),
     device_map="cuda:0",
@@ -117,11 +117,11 @@ EXAONE 계열처럼 custom code가 필요한 경우 이 옵션이 중요할 수 
 
 local_files_only=True
 인터넷에서 다시 다운로드하지 않고, 로컬에 이미 저장된 파일만 사용하도록 강제합니다.
-대회 제출용 또는 오프라인 실험 환경에서 재현성을 높이는 데 도움이 됩니다.
+대회 제출용 또는 오프라인 실험 환경에서 재현성을 높이는 데 도움이 됩니다.```
 ---
 ##5.Calibration dataset 변환 및 Quantization 설정 정의
 
-'''ds = load_dataset("json", data_files=str(calib_path))["train"]
+```ds = load_dataset("json", data_files=str(calib_path))["train"]
 ds = ds.map(
     lambda ex: {"text": tokenizer.apply_chat_template(ex["messages"], tokenize=False, add_generation_prompt=False)},
     remove_columns=ds.column_names
@@ -149,12 +149,11 @@ ignore=["lm_head"]
 
 scheme="W8A8"
 weight와 activation을 모두 8비트 기준으로 다루는 W8A8 양자화 방식을 사용했습니다.
-이는 W4보다 일반적으로 양자화 오차가 작고, 성능 안정성을 확보하기에 유리한 선택이었습니다.
+이는 W4보다 일반적으로 양자화 오차가 작고, 성능 안정성을 확보하기에 유리한 선택이었습니다.```
 
 ---
 ##6. 양자화 수행 및 모델 저장
-
-'''print("[4] 모델 양자화(W8A8) 시작..")
+```print("[4] 모델 양자화(W8A8) 시작..")
 oneshot(
     model=model,
     recipe=recipe,
@@ -172,4 +171,4 @@ calibration 시 고려할 최대 시퀀스 길이를 512로 제한했습니다.
 
 num_calibration_samples=len(calib_data)
 calibration 샘플 수를 전체 calib_data 길이와 동일하게 설정했습니다.
-이 코드에서는 총 256개 샘플을 사용합니다.
+이 코드에서는 총 256개 샘플을 사용합니다.```
