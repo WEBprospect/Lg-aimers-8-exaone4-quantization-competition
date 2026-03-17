@@ -136,8 +136,7 @@ local_files_only=True 인터넷에서 다시 다운로드하지 않고, 로컬�
 ---
 
 ### 5.Calibration dataset 변환 및 Quantization 설정 정의
-``` ds = load_dataset("json", data_files=str(calib_path))["train"] ds = ds.map( lambda ex: {"text": tokenizer.apply_chat_template(ex["messages"], tokenize=False, add_generation_prompt=False)}, remove_columns=ds.column_names ) start_time = time.time() recipe = QuantizationModifier( targets=["Linear"], ignore=["lm_head"], scheme="W8A8", )
-
+```ds = load_dataset("json", data_files=str(calib_path))["train"] ds = ds.map( lambda ex: {"text": tokenizer.apply_chat_template(ex["messages"], tokenize=False, add_generation_prompt=False)}, remove_columns=ds.column_names )
 ```
 - **이 부분은 저장해 둔 calibration .jsonl 파일을 dataset으로 불러오고, 모델 입력 형식에 맞게 text로 변환한 뒤, 실제 양자화 설정을 정의하는 단계였습니다.**
 
