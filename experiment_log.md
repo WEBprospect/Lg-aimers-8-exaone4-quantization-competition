@@ -58,8 +58,6 @@
 - **시도한 것**: Hook을 이용해 outlier 분석, W8A8에서 W4A16으로 변경, ignore에 l28.up_proj 추가, calibration 512에서 256으로 감소.
 - **이유**: Layer output과 proj output 분석으로 outlier 위치 파악 (L29 layer output, L28 up_proj), 속도 유지하며 성능 향상.
 - **결과 점수**: 미기재 (최종 근처로 유추).
-- **실패/하락 원인**: 미기재.
-- **교훈**: Outlier 분석으로 특정 레이어 보호가 효과적, 샘플 수 조정은 환경에 따라 다름.
 
-## 최종 코드로 이어진 결론
-실험을 통해 GPTQ 기반 W4A16 양자화가 효과적임을 확인하였으며, outlier가 많이 발생하는 28번째 레이어의 up_proj를 보호하는 전략을 채택하였습니다. Calibration은 기본 설정 유지, 샘플 수 256개로 하여 안정성을 확보하였습니다.
+
+
