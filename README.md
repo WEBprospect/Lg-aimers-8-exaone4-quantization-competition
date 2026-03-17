@@ -91,7 +91,8 @@ from llmcompressor.modifiers.quantization import QuantizationModifier
 
 ### 4. Tokenizer와 원본 모델 로드
 
-``` tokenizer = AutoTokenizer.from_pretrained(str(BASE), trust_remote_code=True, local_files_only=True) model = AutoModelForCausalLM.from_pretrained( str(BASE), device_map="cuda:0", dtype=torch.bfloat16, trust_remote_code=True, local_files_only=True ).eval() print(f"[3] 원본 모델 로드 완료 (dtype: {model.dtype})")
+```
+tokenizer = AutoTokenizer.from_pretrained(str(BASE), trust_remote_code=True, local_files_only=True) model = AutoModelForCausalLM.from_pretrained( str(BASE), device_map="cuda:0", dtype=torch.bfloat16, trust_remote_code=True, local_files_only=True ).eval() print(f"[3] 원본 모델 로드 완료 (dtype: {model.dtype})")
 ```
 
 - **dtype=torch.bfloat16 모델을 bfloat16 정밀도로 로드했습니다. 이는 FP32보다 메모리 사용량을 줄이면서도 비교적 안정적인 정밀도를 제공하는 형식입니다. trust_remote_code=True 해당 모델이 Hugging Face 기본 클래스 외에 커스텀 tokenizer 또는 모델 구현을 포함하고 있을 수 있기 때문에 사용했습니다. EXAONE 계열처럼 custom code가 필요한 경우 이 옵션이 중요할 수 있습니다.
