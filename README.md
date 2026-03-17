@@ -127,6 +127,31 @@ from llmcompressor.modifiers.quantization import QuantizationModifier
 
 ### 4. Tokenizer와 원본 모델 로드
 
-```tokenizer = AutoTokenizer.from_pretrained(str(BASE), trust_remote_code=True, local_files_only=True) model = AutoModelForCausalLM.from_pretrained( str(BASE), device_map="cuda:0", dtype=torch.bfloat16, trust_remote_code=True, local_files_only=True ).eval() print(f"[3] 원본 모델 로드 완료 (dtype: {model.dtype})")```
+```tokenizer = AutoTokenizer.from_pretrained(str(BASE), trust_remote_code=True, local_files_only=True) model = AutoModelForCausalLM.from_pretrained( str(BASE), device_map="cuda:0", dtype=torch.bfloat16, trust_remote_code=True, local_files_only=True ).eval() print(f"[3] 원본 모델 로드 완료 (dtype: {model.dtype})")
+```
 
+- **dtype=torch.bfloat16 모델을 bfloat16 정밀도로 로드했습니다. 이는 FP32보다 메모리 사용량을 줄이면서도 비교적 안정적인 정밀도를 제공하는 형식입니다. trust_remote_code=True 해당 모델이 Hugging Face 기본 클래스 외에 커스텀 tokenizer 또는 모델 구현을 포함하고 있을 수 있기 때문에 사용했습니다. EXAONE 계열처럼 custom code가 필요한 경우 이 옵션이 중요할 수 있습니다.
+local_files_only=True 인터넷에서 다시 다운로드하지 않고, 로컬에 이미 저장된 파일만 사용하도록 강제합니다. 대회 제출용 또는 오프라인 실험 환경에서 재현성을 높이는 데 도움이 됩니다.**
 
+---
+
+### 5.Calibration dataset 변환 및 Quantization 설정 정의
+```ds = load_dataset("json", data_files=str(calib_path))["train"] ds = ds.map( lambda ex: {"text": tokenizer.apply_chat_template(ex["messages"], tokenize=False, add_generation_prompt=False)}, remove_columns=ds.column_names ) start_time = time.time() recipe = QuantizationModifier( targets=["Linear"], ignore=["lm_head"], scheme="W8A8", )
+```
+- **이 부분은 저장해 둔 calibration .jsonl 파일을 dataset으로 불러오고, 모델 입력 형식에 맞게 text로 변환한 뒤, 실제 양자화 설정을 정의하는 단계였습니다.**
+
+- **targets=["Linear"]**: 모델 내부의 Linear 계층들을 양자화 대상으로 지정했습니다. Transformer 모델의 주요 projection 계층들은 대부분 Linear이므로, 이 설정은 실질적으로 핵심 weight들을 양자화하는 의미를 가집니다..
+       
+- **ignore=["lm_head"]**: 최종 출력층인 lm_head는 양자화 대상에서 제외했습니다. 출력 직전 계층은 민감도가 높을 수 있으므로, 이를 제외해 성능 저하를 줄이려는 의도가 반영된 설정입니다.
+
+- **scheme="W8A8"**:weight와 activation을 모두 8비트 기준으로 다루는 W8A8 양자화 방식을 사용했습니다. 이는 W4보다 일반적으로 양자화 오차가 작고, 성능 안정성을 확보하기에 유리한 선택이었습니다.
+
+---
+
+### 6. 양자화 수행 및 모델 저장
+
+```'print("[4] 모델 양자화(W8A8) 시작..") oneshot( model=model, recipe=recipe, dataset=ds, max_seq_length=512, num_calibration_samples=len(calib_data), ) model.save_pretrained(str(OUT_DIR)) tokenizer.save_pretrained(str(OUT_DIR))
+```
+- **max_seq_length=512 calibration 시 고려할 최대 시퀀스 길이를 512로 제한했습니다. 너무 긴 문맥까지 포함하면 계산량이 커질 수 있으므로, 실험 기준에서 적절한 길이로 제한한 것입니다. num_calibration_samples=len(calib_data) calibration 샘플 수를 전체 calib_data 길이와 동일하게 설정했습니다. 이 코드에서는 총 256개 샘플을 사용합니다.**
+
+---
