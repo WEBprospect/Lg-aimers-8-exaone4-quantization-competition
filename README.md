@@ -136,7 +136,8 @@ local_files_only=True 인터넷에서 다시 다운로드하지 않고, 로컬�
 ---
 
 ### 5.Calibration dataset 변환 및 Quantization 설정 정의
-```ds = load_dataset("json", data_files=str(calib_path))["train"] ds = ds.map( lambda ex: {"text": tokenizer.apply_chat_template(ex["messages"], tokenize=False, add_generation_prompt=False)}, remove_columns=ds.column_names ) start_time = time.time() recipe = QuantizationModifier( targets=["Linear"], ignore=["lm_head"], scheme="W8A8", )
+``` ds = load_dataset("json", data_files=str(calib_path))["train"] ds = ds.map( lambda ex: {"text": tokenizer.apply_chat_template(ex["messages"], tokenize=False, add_generation_prompt=False)}, remove_columns=ds.column_names ) start_time = time.time() recipe = QuantizationModifier( targets=["Linear"], ignore=["lm_head"], scheme="W8A8", )
+
 ```
 - **이 부분은 저장해 둔 calibration .jsonl 파일을 dataset으로 불러오고, 모델 입력 형식에 맞게 text로 변환한 뒤, 실제 양자화 설정을 정의하는 단계였습니다.**
 
@@ -150,7 +151,8 @@ local_files_only=True 인터넷에서 다시 다운로드하지 않고, 로컬�
 
 ### 6. 양자화 수행 및 모델 저장
 
-```'print("[4] 모델 양자화(W8A8) 시작..") oneshot( model=model, recipe=recipe, dataset=ds, max_seq_length=512, num_calibration_samples=len(calib_data), ) model.save_pretrained(str(OUT_DIR)) tokenizer.save_pretrained(str(OUT_DIR))
+``` 'print("[4] 모델 양자화(W8A8) 시작..") oneshot( model=model, recipe=recipe, dataset=ds, max_seq_length=512, num_calibration_samples=len(calib_data), ) model.save_pretrained(str(OUT_DIR)) tokenizer.save_pretrained(str(OUT_DIR))
+
 ```
 - **max_seq_length=512 calibration 시 고려할 최대 시퀀스 길이를 512로 제한했습니다. 너무 긴 문맥까지 포함하면 계산량이 커질 수 있으므로, 실험 기준에서 적절한 길이로 제한한 것입니다. num_calibration_samples=len(calib_data) calibration 샘플 수를 전체 calib_data 길이와 동일하게 설정했습니다. 이 코드에서는 총 256개 샘플을 사용합니다.**
 
