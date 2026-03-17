@@ -65,6 +65,7 @@ QuantizationModifier
 양자화 설정을 정의하는 객체입니다.
 어떤 계층을 양자화할지, 어떤 계층은 제외할지, 어떤 quantization scheme을 적용할지를 여기서 지정했습니다.
 
+---
 ##2. Calibration 샘플 정의
 
 '''base_calib_samples = [
@@ -81,7 +82,7 @@ GPTQ 계열 또는 W8A8 계열 양자화에서는 단순히 모델 weight만 바
 이렇게 구성한 이유는 calibration 입력이 한 가지 유형에만 치우치지 않도록 하기 위함이었습니다.
 즉, 짧은 계산 문제, 논리적 설명, 코드 생성 등 서로 다른 특성을 가진 입력을 섞어서
 모델이 여러 스타일의 입력 분포를 최소한이라도 보게 만들고자 했습니다.
-
+---
 ##3. Calibration 데이터 확장 및 JSONL 저장
 
 '''calib_data = base_calib_samples * 64 
@@ -94,7 +95,7 @@ print(f"[2] 캘리브레이션 데이터(다양성 확보) 생성 완료: {calib
 
 이 부분은 앞에서 만든 4개의 기본 calibration 샘플을 실제 양자화에 사용할 수 있도록 확장하고,
 이를 .jsonl 파일로 저장하는 단계였습니다.
-
+---
 ##4. Tokenizer와 원본 모델 로드
 '''tokenizer = AutoTokenizer.from_pretrained(str(BASE), trust_remote_code=True, local_files_only=True)
 model = AutoModelForCausalLM.from_pretrained(
@@ -117,8 +118,8 @@ EXAONE 계열처럼 custom code가 필요한 경우 이 옵션이 중요할 수 
 local_files_only=True
 인터넷에서 다시 다운로드하지 않고, 로컬에 이미 저장된 파일만 사용하도록 강제합니다.
 대회 제출용 또는 오프라인 실험 환경에서 재현성을 높이는 데 도움이 됩니다.
-
-##Calibration dataset 변환 및 Quantization 설정 정의
+---
+##5.Calibration dataset 변환 및 Quantization 설정 정의
 
 '''ds = load_dataset("json", data_files=str(calib_path))["train"]
 ds = ds.map(
@@ -150,6 +151,7 @@ scheme="W8A8"
 weight와 activation을 모두 8비트 기준으로 다루는 W8A8 양자화 방식을 사용했습니다.
 이는 W4보다 일반적으로 양자화 오차가 작고, 성능 안정성을 확보하기에 유리한 선택이었습니다.
 
+---
 ##6. 양자화 수행 및 모델 저장
 
 '''print("[4] 모델 양자화(W8A8) 시작..")
