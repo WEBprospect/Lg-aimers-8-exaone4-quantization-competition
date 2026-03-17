@@ -1,4 +1,5 @@
-# Aimers 8기 : 모델 경량화 온라인 해커톤
+# Development Environment, Library Versions, and External Data
+
 # 팀명 : MJU_AI
 
 # 개발환경
