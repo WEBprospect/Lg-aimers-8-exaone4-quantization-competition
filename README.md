@@ -115,3 +115,18 @@ from llmcompressor.modifiers.quantization import QuantizationModifier
 
 ---
 
+### 3. Calibration 데이터 확장 및 JSONL 저장
+``` calib_data = base_calib_samples * 64 calib_path = ROOT / "calib_optimized.jsonl" with open(calib_path, "w", encoding="utf-8") as f:
+    for item in calib_data: f.write(json.dumps(item, ensure_ascii=False) + "\n") print(f"[2] 캘리브레이션 데이터(다양성 확보) 생성 완료: {calib_path}")
+```
+- **GPTQ 계열 또는 W8A8 계열 양자화에서는 단순히 모델 weight만 바꾸는 것이 아니라, 일정한 입력 데이터를 모델에 통과시켜 보면서 어떤 activation 분포가 나오는지,
+  어떤 계층이 민감한지, 어느 부분을 더 잘 보존해야 하는지를 파악해야 했습니다. 이렇게 구성한 이유는 calibration 입력이 한 가지 유형에만 치우치지 않도록 하기 위함이었습니다.
+  즉, 짧은 계산 문제, 논리적 설명, 코드 생성 등 서로 다른 특성을 가진 입력을 섞어서 모델이 여러 스타일의 입력 분포를 최소한이라도 보게 만들고자 했습니다.**
+
+---
+
+### 4. Tokenizer와 원본 모델 로드
+
+```tokenizer = AutoTokenizer.from_pretrained(str(BASE), trust_remote_code=True, local_files_only=True) model = AutoModelForCausalLM.from_pretrained( str(BASE), device_map="cuda:0", dtype=torch.bfloat16, trust_remote_code=True, local_files_only=True ).eval() print(f"[3] 원본 모델 로드 완료 (dtype: {model.dtype})")```
+
+
