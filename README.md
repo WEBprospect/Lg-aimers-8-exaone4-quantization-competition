@@ -103,4 +103,15 @@ from llmcompressor.modifiers.quantization import QuantizationModifier
 
 ---
 
+### 2. Calibration 샘플 정의
+```base_calib_samples = [ {"messages": [{"role": "user", "content": "단계별로 풀고 마지막 줄에 답만 써줘: 어떤 수의 30%는 45이다. 그 수는?"}]},
+{"messages": [{"role": "user", "content": "다음 두 식을 연립하여 x, y를 구하시오. x + y = 10, x - y = 2"}]},
+{"messages": [{"role": "user", "content": "이순신 장군이 거북선을 만든 이유를 논리적으로 설명해줘."}]},
+{"messages": [{"role": "user", "content": "주어진 JSON 데이터를 파싱하여 Python 딕셔너리로 변환하는 코드를 작성해."}]} ]
+```
+- **GPTQ 계열 또는 W8A8 계열 양자화에서는 단순히 모델 weight만 바꾸는 것이 아니라, 일정한 입력 데이터를 모델에 통과시켜 보면서 어떤 activation 분포가 나오는지,
+  어떤 계층이 민감한지, 어느 부분을 더 잘 보존해야 하는지를 파악해야 했습니다. 이렇게 구성한 이유는 calibration 입력이 한 가지 유형에만 치우치지 않도록 하기 위함이었습니다.
+  즉, 짧은 계산 문제, 논리적 설명, 코드 생성 등 서로 다른 특성을 가진 입력을 섞어서 모델이 여러 스타일의 입력 분포를 최소한이라도 보게 만들고자 했습니다.**
+
+---
 
