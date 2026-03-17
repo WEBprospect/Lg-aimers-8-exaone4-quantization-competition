@@ -123,4 +123,3 @@ ds = ds.map( lambda ex: {"text": tokenizer.apply_chat_template(ex["messages"], t
 ```
 - **max_seq_length=512 calibration 시 고려할 최대 시퀀스 길이를 512로 제한했습니다. 너무 긴 문맥까지 포함하면 계산량이 커질 수 있으므로, 실험 기준에서 적절한 길이로 제한한 것입니다. num_calibration_samples=len(calib_data) calibration 샘플 수를 전체 calib_data 길이와 동일하게 설정했습니다. 이 코드에서는 총 256개 샘플을 사용합니다.**
 
----
